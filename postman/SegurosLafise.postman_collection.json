@@ -1,0 +1,133 @@
+{
+  "info": {
+    "name": "Seguros LAFISE - Emision de Polizas",
+    "description": "Coleccion para probar la API de emision de polizas de auto. Cambia la variable {{baseUrl}} si tu puerto es distinto.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5222"
+    }
+  ],
+  "item": [
+    {
+      "name": "Catalogos - Clientes",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/catalogos/clientes",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "catalogos", "clientes"]
+        },
+        "description": "Lista de clientes disponibles para emitir una poliza."
+      }
+    },
+    {
+      "name": "Catalogos - Coberturas",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/catalogos/coberturas",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "catalogos", "coberturas"]
+        },
+        "description": "Lista de coberturas disponibles con su monto."
+      }
+    },
+    {
+      "name": "Polizas - Emitir (POST)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"clienteId\": 1,\n  \"vehiculo\": {\n    \"placa\": \"M123456\",\n    \"marca\": \"Toyota\",\n    \"modelo\": \"Corolla\",\n    \"anio\": 2020,\n    \"valorComercial\": 18000\n  },\n  \"coberturasIds\": [1, 3, 5]\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/polizas/emitir",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "polizas", "emitir"]
+        },
+        "description": "Emite una poliza. La PrimaTotal se calcula en el servidor (suma de los montos de las coberturas seleccionadas)."
+      }
+    },
+    {
+      "name": "Polizas - Listar todas (GET)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/polizas",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "polizas"]
+        },
+        "description": "Historial de todas las polizas emitidas."
+      }
+    },
+    {
+      "name": "Polizas - Detalle por Id (GET)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/polizas/1",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "polizas", "1"]
+        },
+        "description": "Detalle de una poliza por su Id."
+      }
+    },
+    {
+      "name": "Polizas - Emitir cliente inexistente (404)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"clienteId\": 999,\n  \"vehiculo\": {\n    \"placa\": \"X1\",\n    \"marca\": \"Nissan\",\n    \"modelo\": \"Sentra\",\n    \"anio\": 2019,\n    \"valorComercial\": 12000\n  },\n  \"coberturasIds\": [1]\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/polizas/emitir",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "polizas", "emitir"]
+        },
+        "description": "Ejemplo de error: el cliente no existe, la API responde 404 Not Found."
+      }
+    },
+    {
+      "name": "Polizas - Emitir cobertura inexistente (400)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"clienteId\": 1,\n  \"vehiculo\": {\n    \"placa\": \"X2\",\n    \"marca\": \"Honda\",\n    \"modelo\": \"Civic\",\n    \"anio\": 2021,\n    \"valorComercial\": 20000\n  },\n  \"coberturasIds\": [99]\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/polizas/emitir",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "polizas", "emitir"]
+        },
+        "description": "Ejemplo de error: una cobertura no existe, la API responde 400 Bad Request."
+      }
+    }
+  ]
+}

@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seguros LAFISE - Emision de Polizas</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        h1 {
+            color: #006837;
+        }
+        .contenedor {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .tarjeta {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            margin-top: 4px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .coberturas-lista label {
+            font-weight: normal;
+            margin-top: 6px;
+        }
+        .coberturas-lista input {
+            width: auto;
+            margin-right: 8px;
+        }
+        button {
+            margin-top: 15px;
+            background-color: #006837;
+            color: #fff;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 15px;
+        }
+        button:hover {
+            background-color: #00502b;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+            font-size: 14px;
+        }
+        th {
+            background-color: #006837;
+            color: #fff;
+        }
+        #mensaje {
+            margin-top: 12px;
+            font-weight: bold;
+        }
+        .ok { color: #006837; }
+        .error { color: #c0392b; }
+    </style>
+</head>
+<body>
+    <div class="contenedor">
+        <h1>Seguros LAFISE S.A.</h1>
+        <p>Modulo de emision de polizas de auto</p>
+
+        <div class="tarjeta">
+            <h2>Emitir nueva poliza</h2>
+
+            <label for="cliente">Cliente</label>
+            <select id="cliente"></select>
+
+            <label for="placa">Placa</label>
+            <input type="text" id="placa" placeholder="Ej: M-123456">
+
+            <label for="marca">Marca</label>
+            <input type="text" id="marca" placeholder="Ej: Toyota">
+
+            <label for="modelo">Modelo</label>
+            <input type="text" id="modelo" placeholder="Ej: Corolla">
+
+            <label for="anio">Anio</label>
+            <input type="number" id="anio" placeholder="Ej: 2020">
+
+            <label for="valor">Valor comercial</label>
+            <input type="number" id="valor" placeholder="Ej: 25000">
+
+            <label>Coberturas</label>
+            <div id="coberturas" class="coberturas-lista"></div>
+
+            <button onclick="emitirPoliza()">Emitir poliza</button>
+
+            <div id="mensaje"></div>
+        </div>
+
+        <div class="tarjeta">
+            <h2>Polizas emitidas</h2>
+            <button onclick="cargarPolizas()">Refrescar</button>
+            <table>
+                <thead>
+                    <tr>
+                        <th># Poliza</th>
+                        <th>Cliente</th>
+                        <th>Vehiculo</th>
+                        <th>Suma Asegurada</th>
+                        <th>Prima Total</th>
+                        <th>Fecha</th>
+                    </tr>
+                </thead>
+                <tbody id="tablaPolizas"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // Carga inicial: clientes, coberturas y polizas
+        window.onload = function () {
+            cargarClientes();
+            cargarCoberturas();
+            cargarPolizas();
+        };
+
+        function cargarClientes() {
+            fetch('/api/catalogos/clientes')
+                .then(r => r.json())
+                .then(clientes => {
+                    const select = document.getElementById('cliente');
+                    select.innerHTML = '';
+                    clientes.forEach(c => {
+                        const opt = document.createElement('option');
+                        opt.value = c.id;
+                        opt.text = c.nombre + ' (' + c.identificacion + ')';
+                        select.add(opt);
+                    });
+                });
+        }
+
+        function cargarCoberturas() {
+            fetch('/api/catalogos/coberturas')
+                .then(r => r.json())
+                .then(coberturas => {
+                    const div = document.getElementById('coberturas');
+                    div.innerHTML = '';
+                    coberturas.forEach(c => {
+                        const label = document.createElement('label');
+                        const check = document.createElement('input');
+                        check.type = 'checkbox';
+                        check.value = c.id;
+                        label.appendChild(check);
+                        label.appendChild(document.createTextNode(
+                            c.nombre + ' - $' + c.montoCobertura));
+                        div.appendChild(label);
+                    });
+                });
+        }
+
+        function emitirPoliza() {
+            const mensaje = document.getElementById('mensaje');
+            mensaje.textContent = '';
+
+            // Recoger coberturas marcadas
+            const seleccionadas = [];
+            document.querySelectorAll('#coberturas input:checked').forEach(c => {
+                seleccionadas.push(parseInt(c.value));
+            });
+
+            const datos = {
+                clienteId: parseInt(document.getElementById('cliente').value),
+                vehiculo: {
+                    placa: document.getElementById('placa').value,
+                    marca: document.getElementById('marca').value,
+                    modelo: document.getElementById('modelo').value,
+                    anio: parseInt(document.getElementById('anio').value),
+                    valorComercial: parseFloat(document.getElementById('valor').value)
+                },
+                coberturasIds: seleccionadas
+            };
+
+            fetch('/api/polizas/emitir', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(datos)
+            })
+            .then(async r => {
+                if (r.ok) {
+                    const poliza = await r.json();
+                    mensaje.className = 'ok';
+                    mensaje.textContent = 'Poliza emitida: ' + poliza.numeroPoliza +
+                        ' | Prima total: $' + poliza.primaTotal;
+                    limpiarFormulario();
+                    cargarPolizas();
+                } else {
+                    const error = await r.json();
+                    mensaje.className = 'error';
+                    mensaje.textContent = 'Error: ' + (error.mensaje || 'Datos invalidos');
+                }
+            })
+            .catch(() => {
+                mensaje.className = 'error';
+                mensaje.textContent = 'Error de conexion con el servidor';
+            });
+        }
+
+        function cargarPolizas() {
+            fetch('/api/polizas')
+                .then(r => r.json())
+                .then(polizas => {
+                    const tabla = document.getElementById('tablaPolizas');
+                    tabla.innerHTML = '';
+                    polizas.forEach(p => {
+                        const fila = document.createElement('tr');
+                        fila.innerHTML =
+                            '<td>' + p.numeroPoliza + '</td>' +
+                            '<td>' + p.clienteNombre + '</td>' +
+                            '<td>' + p.vehiculoMarca + ' ' + p.vehiculoModelo + ' (' + p.vehiculoPlaca + ')</td>' +
+                            '<td>$' + p.sumaAsegurada + '</td>' +
+                            '<td>$' + p.primaTotal + '</td>' +
+                            '<td>' + new Date(p.fechaEmision).toLocaleString() + '</td>';
+                        tabla.appendChild(fila);
+                    });
+                });
+        }
+
+        function limpiarFormulario() {
+            document.getElementById('placa').value = '';
+            document.getElementById('marca').value = '';
+            document.getElementById('modelo').value = '';
+            document.getElementById('anio').value = '';
+            document.getElementById('valor').value = '';
+            document.querySelectorAll('#coberturas input:checked').forEach(c => c.checked = false);
+        }
+    </script>
+</body>
+</html>

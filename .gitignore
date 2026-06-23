@@ -1,0 +1,11 @@
+# Build .NET
+bin/
+obj/
+
+# IDE
+.vs/
+.vscode/
+*.user
+
+# Config local / secretos
+appsettings.Development.json
