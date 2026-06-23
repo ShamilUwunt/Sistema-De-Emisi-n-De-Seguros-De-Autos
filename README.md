@@ -1,4 +1,4 @@
-# Sistema de Emisión de Seguros de Auto — Seguros LAFISE S.A.
+# Sistema de Emisión de Seguros de Auto.
 
 Prototipo funcional del módulo de emisión de pólizas de automóviles. Permite capturar los datos del cliente, el vehículo y las coberturas para generar una póliza única, con la `PrimaTotal` calculada en el servidor.
 
@@ -59,12 +59,12 @@ La cadena de conexión está en `src/SegurosLafise.Api/appsettings.json`:
 }
 ```
 
-> ⚠️ **Cambiá `Server=YAMILDESK\SQLEXPRESS` por el nombre de tu servidor SQL.**
+> ⚠️ **Cambiar `Server=YAMILDESK\SQLEXPRESS` por el nombre de tu servidor SQL.**
 > Ejemplos comunes: `localhost`, `.\SQLEXPRESS`, `(localdb)\MSSQLLocalDB`.
 
-Tenés **dos formas** de crear la base de datos. Usá la que prefieras:
+Hay **dos formas** de crear la base de datos. Usar Cualquiera:
 
-### Opción A — Migraciones de EF Core (recomendada)
+### Opción A — Migraciones de EF Core
 
 Desde la carpeta del proyecto:
 
@@ -78,7 +78,7 @@ Esto crea la base `SegurosLafiseDb`, todas las tablas y los datos semilla.
 
 ### Opción B — Script SQL
 
-Ejecutá el script `database/script.sql` en tu servidor (SSMS, Azure Data Studio o `sqlcmd`). El script crea las tablas y carga los datos semilla.
+Ejecutá el script `database/script.sql` en el servidor (SSMS, Azure Data Studio o `sqlcmd`). El script crea las tablas y carga los datos semilla.
 
 ```bash
 sqlcmd -S TU_SERVIDOR -E -d SegurosLafiseDb -i database/script.sql
@@ -95,7 +95,7 @@ dotnet run
 
 La API queda escuchando en **http://localhost:5222**.
 
-Una vez levantada, podés usar:
+Una vez levantada, se puede usar:
 
 - **Frontend:** http://localhost:5222/
 - **Swagger:** http://localhost:5222/swagger
